@@ -1,33 +1,6 @@
-function startConverting() {
-    let me = window['me'];
-    if('webkitSpeechRecognition' in window) {
-        let speechRecognizer = new webkitSpeechRecognition();
-        speechRecognizer.continuous = true;
-        speechRecognizer.interimResults = true;
-        speechRecognizer.lang = 'en-US';
-        speechRecognizer.start();
-
-        let finalTranscripts = '';
-        speechRecognizer.onresult = function(event) {
-            let interimTranscripts = '';
-            for (var i = event.resultIndex; i < event.results.lenght; i++) {
-                let transcript = event.results[i][0].transcript;
-                transcript.replace("\n", "<br>");
-                if(event.results[i].isFinal)
-                    finalTranscripts += transcript;
-                else
-                    interimTranscripts += transcript;
-            }
-            me.innerHTML = finalTranscripts + '<span style="color: #999">' + interimTranscripts + '</span>';
-        };
-        speechRecognizer.onerror = function(event) {};
-    } else {
-        me.innerHTML = 'Your browser is not support';
-    }
-}
+'use strict';
 
 var app = angular.module('IOT', []);
-
 app.controller('IndexController', function ($scope) {
 
     $scope.showTabs = function(tab) {
@@ -60,8 +33,8 @@ app.controller('IndexController', function ($scope) {
 
     $scope.showTabs(1);
     $scope.backlogs = $scope.getStorage('backlogs');
-    $scope.todos         = $scope.getStorage('todos');
-    $scope.dones         = $scope.getStorage('dones');
+    $scope.todos    = $scope.getStorage('todos');
+    $scope.dones    = $scope.getStorage('dones');
 
     $scope.addBacklogs = function(title) {
         let temp = {'title':title, 'selected':false};
@@ -70,16 +43,40 @@ app.controller('IndexController', function ($scope) {
 
     $scope.removeBacklogs = function(num) {
         let temp = $scope.backlogs[parseInt(num)];
-        $scope.todos.push(temp);
-        $scope.backlogs.splice(parseInt(num-1), 1);
+        if(temp) {
+            $scope.todos.push(temp);
+            $scope.backlogs.splice(parseInt(num-1), 1);
+        }
     };
 
     $scope.removeTodos = function(num) {
         let temp = $scope.todos[parseInt(num)];
-        temp.selected = true;
-        $scope.dones.push(temp);
-        $scope.todos.splice(parseInt(num-1), 1);
+        if(temp) {
+            $scope.dones.push(temp);
+            $scope.todos.splice(parseInt(num-1), 1);
+        }
     };
+
+    let commands = {
+        'thêm mới *val': function(val) {
+            $scope.addBacklogs(val);
+            $scope.$apply();
+        },
+        'di dời *val': function(val) {
+            $scope.removeBacklogs(val);
+            $scope.$apply();
+        },
+        'ok *val': function(val) {
+            $scope.removeTodos(val);
+            $scope.$apply();
+        },
+    };
+
+
+    TunSpeech.makeCommands(commands);
+    TunSpeech.setLanguage('vi-VN');//en-US
+    TunSpeech.debug();
+    TunSpeech.start();
 
     $scope.$watch('backlogs', function(newValue, oldValue) {
         localStorage.setItem('backlogs', JSON.stringify(newValue));
