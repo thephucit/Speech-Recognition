@@ -1,3 +1,6 @@
+body {
+  background: #fffde7;
+}
 .col-md-4::-webkit-scrollbar {
   width: 8px;
 }
@@ -63,4 +66,22 @@ label.selected {
     min-height: 600px;
     max-height: 600px;
     background: #b3e5fc;
+}
+
+#counter {
+    height: 160px;
+    /*font-size: 60px;*/
+    color: #FFF;
+    overflow: hidden;
+}
+.countDays,
+.countHours,
+.countMinutes,
+.countSeconds {
+    display: inline-block;
+    /*width: 106px;*/
+    /*height: 100px;*/
+    margin-left: 10px;
+    border-radius: 5px;
+    padding-top: 22px;
 }

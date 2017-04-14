@@ -1,9 +1,9 @@
-'use strict';
-var app = angular.module('IOT', []);
+﻿'use strict';
+var app = angular.module('IOT', ['ngDialog', 'ngSanitize']);
 app.config(function ($httpProvider) {
     $httpProvider.defaults.withCredentials = true;
 });
-app.controller('IndexController', function ($scope, $http) {
+app.controller('IndexController', function ($scope, $http, ngDialog, $interval) {
 
     $scope.showTabs = function(tab) {
         switch(tab) {
@@ -61,6 +61,24 @@ app.controller('IndexController', function ($scope, $http) {
         });
     };
 
+    $scope.to_slug = function(str) {
+        if(str === undefined) return;
+        str = str.toString().toLowerCase();
+        str = str.replace(/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/g, 'a');
+        str = str.replace(/(è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ)/g, 'e');
+        str = str.replace(/(ì|í|ị|ỉ|ĩ)/g, 'i');
+        str = str.replace(/(ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ)/g, 'o');
+        str = str.replace(/(ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ)/g, 'u');
+        str = str.replace(/(ỳ|ý|ỵ|ỷ|ỹ)/g, 'y');
+        str = str.replace(/(đ)/g, 'd');
+        str = str.replace(/([^0-9a-z-\s])/g, '');
+        str = str.replace(/(\s+)/g, '-');
+        str = str.replace(/^-+/g, '');
+        str = str.replace(/-+$/g, '');
+        return str;
+    };
+
+
     $scope.getFoods = function(num = '') {
         let options = {
             method: 'GET',
@@ -71,6 +89,42 @@ app.controller('IndexController', function ($scope, $http) {
             $scope.foods = res.data.data;
             if(res.data.data.length === 0)
                 $scope.page = 0;
+        });
+    };
+
+    var interval;
+    $scope.getDetail = function(alias) {
+        let options = {
+            method: 'GET',
+            url: alias,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }
+        $http(options).then(function(res) {
+            let seconds = res.data.countdown;
+            interval = $interval(function() {
+                let days = Math.floor(seconds / 24 / 60 / 60);
+                let hoursLeft = Math.floor((seconds) - (days * 86400));
+                let hours = Math.floor(hoursLeft / 3600);
+                let minutesLeft = Math.floor((hoursLeft) - (hours * 3600));
+                let minutes = Math.floor(minutesLeft / 60);
+                let remainingSeconds = seconds % 60;
+                if (remainingSeconds < 10)
+                    remainingSeconds = "0" + remainingSeconds;
+                $scope.countdown_time = days + " ngày : " + hours + " giờ: " + minutes + " phút: " + remainingSeconds + ' giây';
+                seconds--;
+            }, 1000);
+            $scope.detail = res.data;
+        });
+    };
+
+    $scope.viewDetail = function(slug, title, id) {
+        let alias = 'https://www.meete.co/'+slug+'/khuyen-mai-'+$scope.to_slug(title)+'-'+id;
+        $scope.getDetail(alias);
+        ngDialog.open({
+            template: 'externalTemplate.html',
+            width: '42%',
+            showClose: false,
+            scope: $scope
         });
     };
 
@@ -87,50 +141,75 @@ app.controller('IndexController', function ($scope, $http) {
     };
 
     let commands = {
-        'thêm công việc *val': function(val) {
-            $scope.addBacklogs(val);
+        'thêm việc *val': function(val) {
+            $scope.addBacklogs(val.toLowerCase());
             $scope.$apply();
         },
         'thực hiện *val': function(val) {
-            $scope.removeBacklogs(val);
+            $scope.removeBacklogs(val.toLowerCase());
             $scope.$apply();
         },
-        'ok *val': function(val) {
-            $scope.removeTodos(val);
+        'xong *val': function(val) {
+            $scope.removeTodos(val.toLowerCase());
             $scope.$apply();
         },
         'xem *val': function(val) {
-            switch(val) {
-                case 'kế hoạch':
+            switch(val.toLowerCase()) {
+                case 'công việc':
                     $scope.showTabs(1);
                     $scope.$apply();
                     break;
-                case 'thức ăn':
+                case 'đồ ăn':
                     $scope.showTabs(2);
+                    $scope.$apply();
+                    break;
+                case 'thêm':
+                    $scope.page += 20;
+                    $scope.getFoods('/'+$scope.page+'_ofs');
                     $scope.$apply();
                     break;
             }
         },
-        'tìm thêm': function(val) {
-            $scope.page += 20;
-            $scope.getFoods('/'+$scope.page+'_ofs');
-        },
-        'kéo xuống': function() {
-            $scope.scrollDown();
-        },
-        'xuống phát nữa': function() {
-            $scope.scrollDown();
-        },
-        'kéo lên': function() {
-            $scope.scrollUp();
-        },
-        'lên phát nữa': function() {
-            $scope.scrollUp();
+        'kéo *val': function(val) {
+            switch(val.toLowerCase()) {
+                case 'xuống':
+                    $scope.scrollDown();
+                    $scope.$apply();
+                    break;
+                case 'lên':
+                    $scope.scrollUp();
+                    $scope.$apply();
+                    break;
+            }
         },
         'về đầu trang': function() {
             window.scrollTo(0, 0);
             $scope.page = 0;
             $scope.getFoods();
+        },
+        'chi tiết *val': function(val) {
+            angular.forEach($scope.foods, function(value, key) {
+                if(value.id == val || value.address.toLowerCase().includes(val.toLowerCase()) || value.name.toLowerCase().includes(val.toLowerCase()) || value.title.toLowerCase().includes(val.toLowerCase())) {
+                    let alias = 'https://www.meete.co/'+value.slug+'/khuyen-mai-'+$scope.to_slug(value.title)+'-'+value.id;
+                    $scope.getDetail(alias);
+                    ngDialog.open({
+                        template: 'externalTemplate.html',
+                        width: '42%',
+                        showClose: false,
+                        scope: $scope
+                    });
+                    $scope.$apply();
+                    return;
+                }
+            });
+        },
+        'đóng lại': function() {
+            $interval.cancel(interval);
+            delete $scope.detail;
+            ngDialog.close();
+        },
+        'tải lại trang': function(val) {
+            window.location.reload();
         }
     };
 

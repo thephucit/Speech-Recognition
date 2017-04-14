@@ -21,7 +21,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     let TunSpeech;
     let SpeechRecognition = root.SpeechRecognition || root.webkitSpeechRecognition || root.mozSpeechRecognition || root.msSpeechRecognition || root.oSpeechRecognition;
     if (!SpeechRecognition) return null;
-    let commandsList = [];
+    let _cmd_li = [];
     let recognition;
     let callbacks = {
         start: [],
@@ -47,7 +47,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     let namedParam = /(\(\?)?:\w+/g;
     let splatParam = /\*\w+/g;
     let escapeRegExp = /[\-{}\[\]+?.,\\\^$|#]/g;
-    let commandToRegExp = function commandToRegExp(command) {
+    let cmdToRegExp = function cmdToRegExp(command) {
         command = command.replace(escapeRegExp, '\\$&').replace(optionalParam, '(?:$1)?').replace(namedParam, function(match, optional) {
             return optional ? match : '([^\\s]+)';
         }).replace(splatParam, '(.*?)').replace(optionalRegex, '\\s*$1?\\s*');
@@ -77,7 +77,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
     };
     let registerCommand = function registerCommand(command, callback, originalPhrase) {
-        commandsList.push({
+        _cmd_li.push({
             command: command,
             callback: callback,
             originalPhrase: originalPhrase
@@ -93,8 +93,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             commandText = results[i].trim();
             if (debugState)
                 log('Speech recognized: %c' + commandText, debugStyle);
-            for (let j = 0, l = commandsList.length; j < l; j++) {
-                let currentCommand = commandsList[j];
+            for (let j = 0, l = _cmd_li.length; j < l; j++) {
+                let currentCommand = _cmd_li[j];
                 let result = currentCommand.command.exec(commandText);
                 if (result) {
                     let parameters = result.slice(1);
@@ -180,7 +180,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                     results[k] = SpeechRecognitionResult[k].transcript;
                 parseResults(results);
             };
-            if (resetCommands) commandsList = [];
+            if (resetCommands) _cmd_li = [];
             if (commands.length) this.makeCommands(commands);
         },
         run: function run(options) {
@@ -228,7 +228,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                 if (commands.hasOwnProperty(phrase)) {
                     cb = root[commands[phrase]] || commands[phrase];
                     if (typeof cb === 'function') {
-                        registerCommand(commandToRegExp(phrase), cb, phrase);
+                        registerCommand(cmdToRegExp(phrase), cb, phrase);
                     } else if ((typeof cb === 'undefined' ? 'undefined' : _typeof(cb)) === 'object' && cb.regexp instanceof RegExp) {
                         registerCommand(new RegExp(cb.regexp.source, 'i'), cb.callback, phrase);
                     } else {
@@ -240,10 +240,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         },
         removeCommands: function removeCommands(commandsToRemove) {
             if (commandsToRemove === undefined) {
-                commandsList = [];
+                _cmd_li = [];
             } else {
                 commandsToRemove = Array.isArray(commandsToRemove) ? commandsToRemove : [commandsToRemove];
-                commandsList = commandsList.filter(function(command) {
+                _cmd_li = _cmd_li.filter(function(command) {
                     for (let i = 0; i < commandsToRemove.length; i++)
                         if (commandsToRemove[i] === command.originalPhrase)
                             return false;

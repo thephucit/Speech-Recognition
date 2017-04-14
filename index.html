@@ -8,6 +8,8 @@
         <link rel="shortcut icon" href="assets/img/favicon.png" type="image/x-icon" />
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.1/css/font-awesome.min.css" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="assets/css/ngDialog-theme-default.min.css">
+        <link rel="stylesheet" href="assets/css/ngDialog.min.css">
         <link rel="stylesheet" href="assets/css/style.css">
     </head>
     <body ng-app="IOT" ng-controller="IndexController" ng-cloak>
@@ -16,27 +18,27 @@
         <div class="container">
             <div class="row">
                 <ul class="nav nav-tabs">
-                    <li role="presentation" ng-click="showTabs(1)" ng-class="class_tab_1"><a href="javascript:void(0)">Schedules</a></li>
-                    <li role="presentation" ng-click="showTabs(2)" ng-class="class_tab_2"><a href="javascript:void(0)">Foods</a></li>
+                    <li role="presentation" ng-click="showTabs(1)" ng-class="class_tab_1"><a href="javascript:void(0)">Công việc <label class="label label-info">command: xem công việc</label></a></li>
+                    <li role="presentation" ng-click="showTabs(2)" ng-class="class_tab_2"><a href="javascript:void(0)">Đồ ăn & đồ uống <label class="label label-info">command: xem đồ ăn</label></a></li>
                 </ul>
             </div>
             <div class="row">
                 <!-- schedules -->
                 <div ng-show="is_show_schedules">
                     <div class="col-md-4 backlogs-col">
-                        <h4 class="backlogs">Backlogs</h4>
+                        <h4 class="backlogs">Backlogs </h4><label class="label label-info">command: thêm việc + tên việc</label>
                         <div class="checkbox" ng-repeat="item in backlogs track by $index">
                             <label><i class="glyphicon glyphicon-share-alt"></i> {{item.title}}</label>
                         </div>
                     </div>
                     <div class="col-md-4 todo-col">
-                        <h4 class="todo">Todo</h4>
+                        <h4 class="todo">Todo </h4><label class="label label-info">command: thực hiện + tên việc</label>
                         <div class="checkbox" ng-repeat="item in todos track by $index">
                             <label><i class="glyphicon glyphicon-share-alt"></i> {{item.title}}</label>
                         </div>
                     </div>
                     <div class="col-md-4 done-col">
-                        <h4 class="done">Done</h4>
+                        <h4 class="done">Done </h4><label class="label label-info">command: xong + tên việc</label>
                         <div class="checkbox" ng-repeat="item in dones track by $index">
                             <label class="selected"><i class="glyphicon glyphicon-share-alt"></i> {{item.title}}</label>
                         </div>
@@ -53,7 +55,7 @@
                                     <h4>{{item.name}}</h4>
                                     <small>{{item.title}}</small>
                                     <small>{{item.address}}</small>
-                                    <p><a href="#" class="btn btn-default" role="button">Lệnh: chi tiết + tiêu đề bài</a></p>
+                                    <p><a href="javascript:void(0)" ng-click="viewDetail(item.slug, item.title, item.id)" class="btn btn-default" role="button">Lệnh: chi tiết + <span class="badge">{{item.id}}</span></a></p>
                                 </div>
                             </div>
                         </div>
@@ -61,8 +63,30 @@
                 </div>
             </div>
         </div>
+        <script type="text/ng-template" id="externalTemplate.html">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="thumbnail">
+                        <img ng-if="detail.rest.avatar" ng-src="{{'https://media.meete.co/cache/750x470/'+detail.rest.avatar}}" class="img-responsive" alt="Image">
+                        <div class="caption">
+                            <h3 style="color: #ef5350">{{detail.rest.name}}</h3>
+                            <h4 style="color: #8bc34a">{{countdown_time}}</h4>
+                            <hr>
+                            <p><b>Giờ mở cửa:</b> {{detail.rest.opening}}</p>
+                            <p><b>Khoảng giá:</b> {{detail.rest.pricing}}</p>
+                            <p><b>Liên hệ:</b> {{detail.rest.phone}} gặp <b>{{detail.rest.contactName}}</b></p>
+                            <p><b>Email:</b> {{detail.rest.business.email}}</p>
+                            <hr>
+                            <p><i class="glyphicon glyphicon-map-marker"></i> {{detail.rest.address}}, {{detail.rest.district.name}}, {{detail.rest.province.name}}</p>
+                            <strong ng-bind-html="detail.deal.bodyHtml"></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-cookies.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-sanitize.min.js"></script>
+        <script type="text/javascript" src="assets/js/ngDialog.min.js"></script>
         <script type="text/javascript" src="assets/js/tunSpeech.js"></script>
         <script type="text/javascript" src="assets/js/app.js"></script>
     </body>
