@@ -47,14 +47,15 @@
 
                 <!-- foods -->
                 <div ng-show="is_show_foods">
+                    <br>
                     <div class="row">
                         <div class="col-md-4" ng-if="foods" ng-repeat="item in foods track by $index">
                             <div class="thumbnail img-responsive">
-                                <img ng-src="{{'https://media.meete.co/cache/400x0/'+item.avatar}}" alt="...">
+                                <img ng-src="{{'https://media.meete.co/cache/400x250/'+item.avatar}}" alt="...">
                                 <div class="caption">
                                     <h4>{{item.name}}</h4>
-                                    <small>{{item.title}}</small>
-                                    <small>{{item.address}}</small>
+                                    <small style="font-size: 11px">{{item.title}}</small>
+                                    <small style="font-size: 11px">{{item.address}}</small>
                                     <p><a href="javascript:void(0)" ng-click="viewDetail(item.slug, item.title, item.id)" class="btn btn-default" role="button">Lệnh: chi tiết + <span class="badge">{{item.id}}</span></a></p>
                                 </div>
                             </div>
