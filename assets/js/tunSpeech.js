@@ -152,7 +152,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                     autoRestartCount += 1;
                     if (autoRestartCount % 10 === 0) {
                         if (debugState) {
-                            log('Speech Recognition is restarting.');
+                            log('TunSpeech is restarting.');
                         }
                     }
                     if (timeSinceLastStart < 1000) {
